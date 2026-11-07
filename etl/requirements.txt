@@ -1,0 +1,5 @@
+# ETL del proyecto BI-OEE. Versiones fijadas para que el despliegue sea
+# reproducible: `docker compose up` instala exactamente estas versiones.
+openpyxl==3.1.5
+psycopg[binary]==3.2.3
+python-dateutil==2.9.0.post0

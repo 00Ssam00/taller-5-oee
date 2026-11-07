@@ -1,0 +1,106 @@
+# ---------------------------------------------------------------------------
+# Secretos y configuracion local  (NUNCA versionar credenciales)
+# ---------------------------------------------------------------------------
+.env
+.env.local
+*.env
+!.env.example
+*.pgpass
+credenciales/
+secretos/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------------------
+# Salidas del ETL (se regeneran con `make etl`; se versionan solo las plantillas)
+# ---------------------------------------------------------------------------
+etl/salida/*
+!etl/salida/.gitkeep
+# Las capturas son la salida de una sesion en vivo (Grafana con el simulador
+# corriendo, Power BI conectado). No se versionan: el registro congelado de lo
+# que mostraban es el PDF de entregables/, que SI se versiona.
+docs/evidencias/*.png
+docs/evidencias/*.jpg
+!docs/evidencias/.gitkeep
+
+# Notas de trabajo, no documentacion del proyecto.
+CLAUDE.md
+SUSTENTACION.md
+
+# ---------------------------------------------------------------------------
+# Power BI: se versiona el proyecto PBIP (texto). Se EXCLUYE el binario .pbix
+# y las caches locales del modelo.
+# ---------------------------------------------------------------------------
+*.pbix
+*.pbit
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+**/.pbi/*.abf
+**/cache.abf
+
+# ---------------------------------------------------------------------------
+# Docker / volumenes locales
+# ---------------------------------------------------------------------------
+volumenes/
+pgdata/
+grafana-data/
+
+# ---------------------------------------------------------------------------
+# DBeaver (workspace y credenciales locales)
+# ---------------------------------------------------------------------------
+.dbeaver/
+dbeaver-data-sources.xml
+credentials-config.json
+
+# ---------------------------------------------------------------------------
+# Sistema operativo / editores
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+.icloud
+
+# ---------------------------------------------------------------------------
+# Temporales de Excel
+# ---------------------------------------------------------------------------
+~$*.xls*
+*.tmp
+
+# ---------------------------------------------------------------------------
+# DATOS PERSONALES: los insumos de la empresa NO se versionan.
+#
+# El .xlsm de origen contiene los nombres reales de 45 operarias, operarios y
+# tecnicos de mantenimiento (columnas "Operario" y "Personal involucrado", mas
+# la lista nominal de la hoja "Tiempos"). Publicarlo en un repositorio seria
+# divulgar datos personales sin autorizacion de sus titulares, en contra de la
+# Ley 1581 de 2012 y de todo lo que sostiene docs/10.
+#
+# El proyecto sigue siendo reproducible: datos/fuente/README.md explica donde
+# colocar el archivo y registra su SHA-256 para verificar que es el mismo con
+# el que se calcularon las cifras del informe.
+# ---------------------------------------------------------------------------
+datos/**/*.xlsm
+datos/**/*.xlsx
+datos/**/*.xls
+datos/**/*.pdf
+!datos/fuente/README.md
+
+# Intermedio de herramientas/gen_pdf.py, se regenera en cada ejecucion
+docs/_informe.html

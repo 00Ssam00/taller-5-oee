@@ -1,0 +1,190 @@
+# ===========================================================================
+#  proyecto-bi-oee  -  Solucion BI end-to-end para el OEE de las lineas de
+#  envasado de vinilos y temperas.
+#
+#  Levantar todo con UN SOLO COMANDO:
+#       docker compose up -d --build
+#
+#  Componentes de servidor contenerizados:
+#    postgres   motor relacional con el modelo dimensional (esquemas stg/dw/pii)
+#    etl        proceso ETL reproducible (job de un solo uso, re-ejecutable)
+#    grafana    tablero operativo near real-time, aprovisionado por codigo
+#    simulador  genera el registro "hora a hora" para la demo en vivo
+#
+#  Power BI Desktop y DBeaver corren en el equipo anfitrion y se conectan al
+#  puerto publicado ${POSTGRES_PORT_HOST}.
+#
+#  Las credenciales NO estan en este archivo: provienen de `.env` (excluido del
+#  repositorio). Ver `.env.example`.
+# ===========================================================================
+
+name: proyecto-bi-oee
+
+# --- Bloque reutilizable: parametros de conexion a la base --------------------
+x-db-env: &db-env
+  PGHOST: postgres
+  PGPORT: "5432"
+  PGDATABASE: ${POSTGRES_DB}
+  PGUSER: ${POSTGRES_USER}
+  PGPASSWORD: ${POSTGRES_PASSWORD}
+  TZ: ${TZ:-America/Bogota}
+
+services:
+
+  # =========================================================================
+  #  1. PostgreSQL  -  repositorio analitico (modelo dimensional)
+  # =========================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: bioee-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Rol de solo lectura que consumen Grafana y Power BI.
+      BI_READONLY_USER: ${BI_READONLY_USER}
+      BI_READONLY_PASSWORD: ${BI_READONLY_PASSWORD}
+      # Collation determinista para que los ORDER BY sean estables.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      # Publicado en 0.0.0.0 para que la VM de Windows con Power BI Desktop
+      # pueda conectarse a la IP del anfitrion.
+      - "${POSTGRES_PORT_HOST:-55432}:5432"
+    volumes:
+      # Persistencia de datos por volumen nombrado: `docker compose down` NO
+      # borra la base; `docker compose down -v` si.
+      - pgdata:/var/lib/postgresql/data
+      # Los scripts de /docker-entrypoint-initdb.d/ se ejecutan en orden
+      # alfabetico la PRIMERA vez que se crea el volumen.
+      - ./sql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    # Ajustes de memoria orientados a consultas analiticas (agregaciones y
+    # funciones de ventana sobre ~24k filas de hechos).
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "work_mem=32MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "max_parallel_workers_per_gather=2"
+      - "-c"
+      - "timezone=America/Bogota"
+      - "-c"
+      - "log_min_duration_statement=2000"
+
+  # =========================================================================
+  #  2. ETL  -  Excel  ->  staging  ->  modelo dimensional
+  #     Job de un solo uso (restart: "no"). Re-ejecutar con:
+  #         docker compose run --rm etl
+  # =========================================================================
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    image: bioee/etl:1.0
+    container_name: bioee-etl
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *db-env
+      ETL_RUTA_EXCEL: /datos/fuente/Seguimiento Temperas y Vinilos Actividad.xlsm
+      ETL_RUTA_SALIDA: /salida
+      ETL_SALT_PSEUDONIMO: ${ETL_SALT_PSEUDONIMO}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./datos:/datos:ro
+      - ./etl/salida:/salida
+    # Carga completa + validaciones de calidad + conciliacion contra la fuente.
+    command: ["python", "-m", "bi_oee.cli", "ejecutar", "--modo", "completo"]
+
+  # =========================================================================
+  #  3. Grafana  -  tablero operativo near real-time + alertas
+  #     Fuente de datos, tablero y reglas de alerta se cargan por
+  #     PROVISIONING (archivos en ./grafana/provisioning). Cero clics.
+  # =========================================================================
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: bioee-grafana
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Espera a que el ETL termine para no mostrar un tablero vacio.
+      etl:
+        condition: service_completed_successfully
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP:-false}
+      GF_USERS_DEFAULT_THEME: ${GF_USERS_DEFAULT_THEME:-light}
+      GF_AUTH_ANONYMOUS_ENABLED: ${GF_AUTH_ANONYMOUS_ENABLED:-false}
+      # El visor por defecto solo lee; editar requiere rol Editor/Admin.
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: Viewer
+      GF_DASHBOARDS_MIN_REFRESH_INTERVAL: "5s"
+      GF_DATE_FORMATS_DEFAULT_TIMEZONE: ${TZ:-America/Bogota}
+      GF_LOG_LEVEL: warn
+      GF_INSTALL_PLUGINS: ""
+      # Credenciales que el provisioning inyecta en la fuente de datos.
+      BI_READONLY_USER: ${BI_READONLY_USER}
+      BI_READONLY_PASSWORD: ${BI_READONLY_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      - "${GRAFANA_PORT_HOST:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards-bioee:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # =========================================================================
+  #  4. Simulador hora a hora  -  alimenta dw.hecho_produccion_hora
+  #     Demuestra que el tablero de Grafana y la alerta reaccionan en vivo.
+  #     Para la sustentacion:  docker compose logs -f simulador
+  # =========================================================================
+  simulador:
+    build:
+      context: ./simulador
+      dockerfile: Dockerfile
+    image: bioee/simulador:1.0
+    container_name: bioee-simulador
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      etl:
+        condition: service_completed_successfully
+    environment:
+      <<: *db-env
+      SIM_SEGUNDOS_POR_HORA: ${SIM_SEGUNDOS_POR_HORA:-20}
+      SIM_PROB_PARO: ${SIM_PROB_PARO:-0.35}
+      SIM_FORZAR_INCIDENTE: ${SIM_FORZAR_INCIDENTE:-true}
+      SIM_HORAS_HISTORIA: ${SIM_HORAS_HISTORIA:-48}
+      SIM_MAQUINA_INCIDENTE: ${SIM_MAQUINA_INCIDENTE:-Vinilos_2}
+      SIM_HORA_INICIO_INCIDENTE: ${SIM_HORA_INICIO_INCIDENTE:-3}
+      SIM_DURACION_INCIDENTE: ${SIM_DURACION_INCIDENTE:-8}
+      PYTHONUNBUFFERED: "1"
+    command: ["python", "simulador.py"]
+
+volumes:
+  pgdata:
+    name: bioee-pgdata
+  grafana-data:
+    name: bioee-grafana-data

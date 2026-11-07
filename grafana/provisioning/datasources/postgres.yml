@@ -1,0 +1,38 @@
+# ===========================================================================
+#  Fuente de datos PostgreSQL  -  cargada automaticamente al arrancar
+# ===========================================================================
+#  Este archivo es el que hace que Grafana no necesite NINGUNA configuracion
+#  manual: al levantar el contenedor la conexion ya existe.
+#
+#  SEGURIDAD
+#  ---------
+#  * Grafana se conecta con el rol bi_lectura, que solo tiene GRANT SELECT
+#    sobre los esquemas dw y aud. No puede escribir, no puede ver el esquema
+#    pii (datos personales) ni el esquema stg (datos sin depurar).
+#  * La contrasena NO esta en este archivo: se interpola desde la variable de
+#    entorno BI_READONLY_PASSWORD, que Docker Compose toma del .env, que esta
+#    excluido del repositorio. Lo que se versiona es el nombre de la variable.
+# ===========================================================================
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL BI-OEE
+    uid: bioee-postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    user: ${BI_READONLY_USER}
+    database: ${POSTGRES_DB}
+    isDefault: true
+    editable: false
+    jsonData:
+      sslmode: disable          # red interna de Docker, no expuesta
+      postgresVersion: 1700     # PostgreSQL 17
+      timescaledb: false
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      # Zona horaria de la planta: sin esto las series se desplazan 5 horas.
+      timezone: America/Bogota
+    secureJsonData:
+      password: ${BI_READONLY_PASSWORD}

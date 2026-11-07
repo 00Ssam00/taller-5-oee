@@ -1,0 +1,23 @@
+# ===========================================================================
+#  Proveedor de tableros  -  carga los JSON del repositorio
+# ===========================================================================
+#  Grafana lee la carpeta montada y crea los tableros al arrancar. Como
+#  allowUiUpdates esta en false, el tablero del repositorio es la unica
+#  verdad: nadie puede editarlo desde la interfaz y dejar el repositorio
+#  desactualizado. Para cambiarlo hay que editar el JSON y versionarlo, que es
+#  justamente lo que pide el control de versiones.
+# ===========================================================================
+apiVersion: 1
+
+providers:
+  - name: 'Tableros BI-OEE'
+    orgId: 1
+    folder: 'Operacion de envasado'
+    folderUid: bioee-operacion
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards-bioee
+      foldersFromFilesStructure: false

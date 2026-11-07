@@ -1,0 +1,206 @@
+# ===========================================================================
+#  Alertas, punto de contacto y politica de notificacion
+#  Todo se carga automaticamente al arrancar: cero configuracion manual.
+# ===========================================================================
+apiVersion: 1
+
+# ---------------------------------------------------------------------------
+#  1. REGLA DE ALERTA
+# ---------------------------------------------------------------------------
+groups:
+  - orgId: 1
+    name: OEE operativo
+    folder: Operacion de envasado
+    # Se evalua cada 30 s. En produccion, con dato que llega una vez por hora,
+    # bastaria 1 vez cada 5 min; aqui es corto para que la demostracion con el
+    # simulador sea observable en vivo.
+    interval: 30s
+    rules:
+      - uid: bioee-alerta-oee-critico
+        title: OEE critico sostenido en una linea de envasado
+        condition: C
+        # -------------------------------------------------------------------
+        #  JUSTIFICACION DEL UMBRAL (50% de OEE)
+        #  ------------------------------------
+        #  No es un numero redondo elegido al azar. Se sostiene en tres cosas:
+        #
+        #  1. El historico cargado: Vinilos_3 y Vinilos_4 operan de forma
+        #     sostenida entre 72% y 82% de OEE con los mismos equipos y el
+        #     mismo producto. Eso fija la meta alcanzable en 65%.
+        #  2. Vinilos_1 cayo de 62% (2023) a 48,5% (2024) y Vinilos_2 esta en
+        #     48,3% en 2025. Es decir, el 50% es exactamente la frontera en la
+        #     que ya hay lineas cayendo: alertar por debajo de ese valor avisa
+        #     de un problema real, no de ruido estadistico.
+        #  3. Por debajo del 50% la linea produce menos de la mitad de su
+        #     capacidad instalada mientras consume el 100% de la mano de obra
+        #     del turno, de la energia y del aire comprimido. Deja de cubrir
+        #     su costo de operacion.
+        #
+        #  JUSTIFICACION DE LA VENTANA Y DEL "FOR"
+        #  ---------------------------------------
+        #  Se promedian las DOS ultimas horas de produccion y se exige que la
+        #  condicion se mantenga 1 minuto antes de notificar. Un cambio de
+        #  referencia o un mantenimiento preventivo hunden el OEE de una hora
+        #  suelta sin que nada este mal; promediar dos horas y exigir
+        #  persistencia evita despertar al coordinador de mantenimiento por un
+        #  evento normal de operacion. Se alerta de lo sostenido, no del pico.
+        # -------------------------------------------------------------------
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 10800
+              to: 0
+            datasourceUid: bioee-postgres
+            model:
+              refId: A
+              datasource:
+                type: grafana-postgresql-datasource
+                uid: bioee-postgres
+              # FORMATO TABLA, no serie de tiempo. Es el detalle que hace que
+              # una alerta sobre SQL funcione por dimensiones: con formato de
+              # serie de tiempo, PostgreSQL devuelve un "frame ancho" con una
+              # columna por maquina y sin etiquetas, y el motor de alertas
+              # rechaza el resultado con "frame cannot uniquely be identified
+              # by its labels". Con formato tabla devuelve una fila por
+              # maquina, la columna de texto se convierte en la etiqueta
+              # 'maquina' y Grafana crea UNA INSTANCIA DE ALERTA POR LINEA,
+              # que es lo que se necesita para saber cual revisar.
+              format: table
+              editorMode: code
+              rawQuery: true
+              # La consulta se ancla en el instante mas reciente del flujo y
+              # NO usa $__timeFilter. Asi la regla evalua siempre las dos
+              # ultimas horas de produccion realmente registradas, sin
+              # depender del rango de tiempo del tablero ni del reloj de pared,
+              # que durante la simulacion acelerada van a ritmos distintos.
+              rawSql: |
+                SELECT
+                    m.codigo_maquina           AS maquina,
+                    round(avg(h.oee) * 100, 2) AS oee_promedio_2h
+                FROM dw.hecho_produccion_hora h
+                JOIN dw.dim_maquina m ON m.maquina_key = h.maquina_key
+                WHERE h.instante > (SELECT max(instante)
+                                    FROM dw.hecho_produccion_hora)
+                                   - interval '2 hours'
+                GROUP BY m.codigo_maquina
+                ORDER BY 1
+
+          - refId: B
+            relativeTimeRange:
+              from: 10800
+              to: 0
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              reducer: last
+              settings:
+                mode: dropNN
+
+          - refId: C
+            relativeTimeRange:
+              from: 10800
+              to: 0
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [50]
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    type: last
+                    params: []
+                  type: query
+
+        # Si no llega dato, NO se asume que todo esta bien: se marca NoData,
+        # que es en si mismo una anomalia que alguien debe revisar.
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        isPaused: false
+        labels:
+          severidad: critica
+          area: produccion
+          proceso: envasado
+        annotations:
+          # El texto se redacta en forma NEUTRAL a proposito. Grafana usa las
+          # mismas anotaciones para el aviso de disparo y para el de
+          # resolucion, asi que una frase como "esta por debajo del umbral"
+          # llegaria tambien en el mensaje de resolucion, cuando ya no es
+          # cierto. Enunciar el valor y el umbral por separado hace que el
+          # mensaje sea correcto en los dos estados.
+          summary: >-
+            Linea {{ $labels.maquina }}: OEE promedio de las ultimas dos horas
+            de produccion = {{ printf "%.1f" $values.B.Value }}%
+            (umbral critico: 50%).
+          description: >-
+            Revisar en el tablero "OEE operativo" cual de los tres componentes
+            cayo. Si es la Disponibilidad, mirar el panel de causas de paro:
+            historicamente el sistema dosificador de pintura explica el 44,6%
+            del tiempo perdido con causa raiz identificable. Si es el
+            Rendimiento, la linea corre pero por debajo del estandar de
+            ingenieria. Si es la Calidad, hay reproceso en curso.
+          # runbook_url: se activa cuando el repositorio este publicado. Debe
+          # apuntar a la seccion "Alerta de OEE critico" del README:
+          #   https://<servidor>/<usuario>/proyecto-bi-oee#alerta-de-oee-critico
+          # Se deja comentado a proposito: un enlace que no resuelve es peor
+          # que la ausencia de enlace, porque quien atiende la alerta pierde
+          # tiempo siguiendolo.
+
+# ---------------------------------------------------------------------------
+#  2. PUNTO DE CONTACTO
+# ---------------------------------------------------------------------------
+#  Apunta al receptor HTTP que expone el servicio "simulador", que escribe la
+#  notificacion en su log. Sirve para demostrar la alerta de punta a punta: no
+#  basta con que la regla cambie de color en la interfaz, hay que probar que la
+#  notificacion SALE y LLEGA. En produccion este destino se cambia por el
+#  correo del coordinador de mantenimiento o un canal de mensajeria; el
+#  esquema de provisioning es el mismo.
+#
+#  No hay ningun secreto en este archivo: la URL es un nombre de servicio de
+#  la red interna de Docker.
+# ---------------------------------------------------------------------------
+contactPoints:
+  - orgId: 1
+    name: Mantenimiento
+    receivers:
+      - uid: bioee-contacto-mantenimiento
+        type: webhook
+        settings:
+          url: http://simulador:9099/alerta
+          httpMethod: POST
+        disableResolveMessage: false
+
+# ---------------------------------------------------------------------------
+#  3. POLITICA DE NOTIFICACION
+# ---------------------------------------------------------------------------
+policies:
+  - orgId: 1
+    receiver: Mantenimiento
+    group_by: ['alertname', 'maquina']
+    # Agrupa por la etiqueta 'maquina' que produce la consulta en formato
+    # tabla: si dos lineas caen a la vez llegan dos avisos distinguibles, no
+    # uno agregado que no dice cual revisar.
+    group_wait: 10s
+    group_interval: 30s
+    # No repetir el mismo aviso antes de 15 minutos: una alerta que se repite
+    # cada 30 s se acaba silenciando, y entonces no sirve para nada.
+    repeat_interval: 15m
+    routes:
+      - receiver: Mantenimiento
+        object_matchers:
+          - ['severidad', '=', 'critica']

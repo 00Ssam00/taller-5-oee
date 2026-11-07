@@ -1,0 +1,4 @@
+Carpeta requerida por Grafana. Sin ella, el arranque registra un error
+"Failed to read plugin provisioning files from directory". El proyecto no
+instala ningun plugin: todos los paneles usan tipos nativos de Grafana, lo
+que evita depender de plugins externos para que el tablero sea reproducible.

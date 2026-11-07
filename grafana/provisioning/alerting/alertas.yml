@@ -154,12 +154,9 @@ groups:
             del tiempo perdido con causa raiz identificable. Si es el
             Rendimiento, la linea corre pero por debajo del estandar de
             ingenieria. Si es la Calidad, hay reproceso en curso.
-          # runbook_url: se activa cuando el repositorio este publicado. Debe
-          # apuntar a la seccion "Alerta de OEE critico" del README:
-          #   https://<servidor>/<usuario>/proyecto-bi-oee#alerta-de-oee-critico
-          # Se deja comentado a proposito: un enlace que no resuelve es peor
-          # que la ausencia de enlace, porque quien atiende la alerta pierde
-          # tiempo siguiendolo.
+          # Apunta a la seccion "Alerta de OEE critico" del README. El ancla
+          # lleva tilde porque GitHub conserva los acentos al generarla.
+          runbook_url: https://github.com/00Ssam00/taller-5-oee#alerta-de-oee-crítico
 
 # ---------------------------------------------------------------------------
 #  2. PUNTO DE CONTACTO

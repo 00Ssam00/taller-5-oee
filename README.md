@@ -9,6 +9,7 @@ en dos capas de consumo: **Grafana** para la operación del turno y
 
 **Autor:** Samuel Alvarez Becerra
 **Asignatura:** Inteligencia de Negocios · Proyecto Final
+**Repositorio:** <https://github.com/00Ssam00/taller-5-oee>
 **Fuente:** `Seguimiento Temperas y Vinilos Actividad.xlsm` y procedimiento
 `P-MTO-22 V1`
 

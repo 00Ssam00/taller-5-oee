@@ -44,7 +44,7 @@ AUTOR = "Samuel Alvarez Becerra"
 TITULO = "Solución de Inteligencia de Negocios: OEE en líneas de envasado"
 ASIGNATURA = "Inteligencia de Negocios · Proyecto Final"
 # Se reemplaza por la URL real cuando el repositorio se publique.
-REPOSITORIO = "(repositorio local, sin publicar aún)"
+REPOSITORIO = "https://github.com/00Ssam00/taller-5-oee"
 
 # Orden de los capitulos y su titulo en el indice.
 CAPITULOS = [

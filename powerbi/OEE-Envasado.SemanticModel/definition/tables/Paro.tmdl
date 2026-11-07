@@ -1,0 +1,161 @@
+/// Dimension de causas de paro con la jerarquia de cuatro niveles. Es la
+/// tabla sobre la que se hace el drill-down del tablero. El nombre del
+/// sistema es un atributo CONFORMADO construido por el equipo: une las ramas
+/// 1.x (falla electromecanica), 3.x (servicios) y 5.x (ajuste operativo) en
+/// el sistema fisico de la maquina, algo que el Excel no puede hacer porque
+/// esas ramas viven en columnas separadas.
+table Paro
+	lineageTag: 32faaef1-beba-58c7-afc4-327074e0396f
+
+	/// Llave surrogada.
+	column paro_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0052ae30-f892-5029-a707-0db46ba2f8c6
+		summarizeBy: none
+		sourceColumn: paro_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nivel 1 de la jerarquia: area responsable del paro.
+	column area_impacto
+		dataType: string
+		lineageTag: e159e829-7e83-509a-b54f-8b0bb7e0f94d
+		summarizeBy: none
+		sourceColumn: area_impacto
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Codigo de paro de dos digitos.
+	column codigo_paro
+		dataType: string
+		isHidden
+		lineageTag: 03754f78-a6b4-5874-bdfe-b73ac9f932a4
+		summarizeBy: none
+		sourceColumn: codigo_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nivel 2 de la jerarquia: codigo con su descripcion.
+	column etiqueta_codigo_paro
+		dataType: string
+		lineageTag: 32095dff-7de4-589a-8b3c-4d249caf4805
+		summarizeBy: none
+		sourceColumn: etiqueta_codigo_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Descripcion del codigo de paro.
+	column nombre_codigo_paro
+		dataType: string
+		isHidden
+		lineageTag: 378f9403-fc58-56d3-a2fa-fe1317b51e96
+		summarizeBy: none
+		sourceColumn: nombre_codigo_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Planeado o No planeado. Separa el tiempo perdido evitable del
+	/// inevitable.
+	column naturaleza_paro
+		dataType: string
+		lineageTag: a77fca6f-58da-5593-9458-897e5b7e9443
+		summarizeBy: none
+		sourceColumn: naturaleza_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el paro es responsabilidad de mantenimiento.
+	column es_imputable_mantenimiento
+		dataType: boolean
+		lineageTag: a9e598bf-7f61-55e4-b35a-617ce65db1b1
+		summarizeBy: none
+		sourceColumn: es_imputable_mantenimiento
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nivel 3 de la jerarquia: sistema fisico de la maquina. Atributo
+	/// conformado.
+	column nombre_sistema
+		dataType: string
+		lineageTag: f8dced4f-ce90-56ad-8e7b-7a2c3e09d8f8
+		summarizeBy: none
+		sourceColumn: nombre_sistema
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Codigo del subcodigo de causa raiz.
+	column codigo_subcodigo
+		dataType: string
+		isHidden
+		lineageTag: 7b7a8330-874d-5aa7-b91e-7a5318756c00
+		summarizeBy: none
+		sourceColumn: codigo_subcodigo
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nivel 4 de la jerarquia: causa raiz concreta.
+	column nombre_subcodigo
+		dataType: string
+		lineageTag: cbbabb37-e76a-5822-8eb8-97f7c5a2a7a0
+		summarizeBy: none
+		sourceColumn: nombre_subcodigo
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Profundidad real del miembro en la jerarquia desbalanceada.
+	column nivel_detalle
+		dataType: int64
+		formatString: 0
+		lineageTag: 17e84654-3dde-568c-9399-85ba35cf0474
+		summarizeBy: none
+		sourceColumn: nivel_detalle
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Orden de presentacion.
+	column orden_presentacion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0d196b08-2201-5b84-b0d9-8b6cc5aff180
+		summarizeBy: none
+		sourceColumn: orden_presentacion
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Jerarquia de paros de cuatro niveles, sobre la que se hace el
+	/// drill-down del tablero. Es DESBALANCEADA a proposito: solo los
+	/// codigos 01, 03 y 05 tienen subcodigos de causa raiz. En lugar de
+	/// dejar NULL en los otros 15, la dimension trae miembros de relleno
+	/// explicitos ('N/A', 'SIN-ESP'), de modo que el drill-down nunca
+	/// aterriza en un hueco y el usuario entiende por que se detiene.
+	hierarchy 'Jerarquia de paros'
+		lineageTag: 710587e8-7913-506e-a641-9a02edf09bed
+
+		level 'Area responsable'
+			lineageTag: d70f276d-1a64-5b49-be55-c2aecc3858c9
+			column: area_impacto
+
+		level 'Codigo de paro'
+			lineageTag: 39d1e93a-67c5-54cd-a2b4-bda1b705d6a2
+			column: etiqueta_codigo_paro
+
+		level 'Sistema de la maquina'
+			lineageTag: b0d4ba64-48ae-506d-a40a-1cd7ae8d9264
+			column: nombre_sistema
+
+		level 'Causa raiz'
+			lineageTag: 8533f253-a7fa-5b0b-ace7-bba8701990db
+			column: nombre_subcodigo
+
+	partition Paro = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_paro"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"paro_key", "area_impacto", "codigo_paro", "etiqueta_codigo_paro", "nombre_codigo_paro", "naturaleza_paro", "es_imputable_mantenimiento", "nombre_sistema", "codigo_subcodigo", "nombre_subcodigo", "nivel_detalle", "orden_presentacion"})
+				in
+				    Columnas
+

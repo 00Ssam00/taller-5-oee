@@ -1,0 +1,228 @@
+/// TABLA DE HECHOS. Grano declarado: un registro por evento de paro de un
+/// codigo concreto en un turno de una maquina. 16.482 filas, resultado de
+/// despivotar los 18 pares de columnas del Excel.
+table 'Eventos de paro'
+	lineageTag: 83de7cad-877a-5694-bc9d-9521dfca297b
+
+	/// Tiempo perdido medido sobre la tabla de eventos de paro, que es la que
+	/// permite abrir la causa hasta el cuarto nivel de la jerarquia.
+	measure 'Horas perdidas' = SUM('Eventos de paro'[horas_paro])
+		formatString: #,0.0
+		displayFolder: 04 Paros
+		lineageTag: d15aa2aa-9727-5b5d-92e8-82e0a917e098
+
+	/// Numero de eventos de paro registrados.
+	measure 'Numero de eventos' = COUNTROWS('Eventos de paro')
+		formatString: #,0
+		displayFolder: 04 Paros
+		lineageTag: d50c0771-b002-5a76-9ed1-6228bc995ee2
+
+	/// Horas por evento. Junto con el numero de eventos distingue el problema
+	/// cronico (muchos paros cortos) del problema grave (pocos pero largos).
+	measure 'Duracion media del paro' = DIVIDE([Horas perdidas], [Numero de eventos])
+		formatString: 0.00
+		displayFolder: 04 Paros
+		lineageTag: 32cf4d7b-65c0-57a4-80d7-3d56432b7ce4
+
+	/// Traduce el tiempo perdido al lenguaje del negocio: cuantas unidades se
+	/// dejaron de envasar.
+	measure 'Unidades no producidas' = SUM('Eventos de paro'[unidades_no_producidas])
+		formatString: #,0
+		displayFolder: 04 Paros
+		lineageTag: 7b8b25b5-7748-57ff-8841-a0272562b336
+
+	/// Suma acumulada de horas perdidas recorriendo las causas de mayor a
+	/// menor. Es la mitad de la curva de Pareto.
+	measure 'Horas perdidas acumuladas' =
+			VAR HorasDeLaCausa = [Horas perdidas]
+			VAR TodasLasCausas =
+			    ADDCOLUMNS(
+			        ALLSELECTED('Paro'[etiqueta_codigo_paro]),
+			        "@horas", [Horas perdidas]
+			    )
+			VAR Acumulado =
+			    SUMX(
+			        FILTER(TodasLasCausas, [@horas] >= HorasDeLaCausa),
+			        [@horas]
+			    )
+			RETURN
+			    IF(NOT ISBLANK(HorasDeLaCausa), Acumulado)
+		formatString: #,0.0
+		displayFolder: 05 Pareto
+		lineageTag: 5e47c648-6bec-50ec-bd3a-8a230a37d189
+
+	/// Porcentaje acumulado del tiempo perdido. Es la LINEA del grafico de
+	/// Pareto: donde cruza el 80% estan las pocas causas que explican casi
+	/// todo el problema.
+	measure '% acumulado de tiempo perdido' =
+			DIVIDE(
+			    [Horas perdidas acumuladas],
+			    CALCULATE([Horas perdidas], ALLSELECTED('Paro'))
+			)
+		formatString: 0.0%
+		displayFolder: 05 Pareto
+		lineageTag: e9ccfa8a-ea77-5e25-8783-a53611c50c73
+
+	/// Marca si la causa pertenece al 80% que concentra el tiempo perdido.
+	/// Sirve para colorear el grafico y para filtrar el plan de
+	/// mantenimiento.
+	measure 'Clasificacion Pareto' =
+			IF(
+			    [% acumulado de tiempo perdido] <= 0.8,
+			    "Causa vital",
+			    "Causa trivial"
+			)
+		displayFolder: 05 Pareto
+		lineageTag: 49a67ed7-ed2c-5f90-a069-c48ea6f0953c
+
+	/// Tiempo medio de reparacion, en horas. Solo cuenta falla
+	/// electromecanica (01) y espera de soporte (02), que son las averias
+	/// reales.
+	measure MTTR =
+			VAR Fallas =
+			    CALCULATE(
+			        [Numero de eventos],
+			        'Paro'[codigo_paro] IN {"01", "02"}
+			    )
+			VAR HorasReparacion =
+			    CALCULATE(
+			        [Horas perdidas],
+			        'Paro'[codigo_paro] IN {"01", "02"}
+			    )
+			RETURN
+			    DIVIDE(HorasReparacion, Fallas)
+		formatString: 0.00
+		displayFolder: 06 Confiabilidad
+		lineageTag: c843b114-d4c9-5393-b087-8bfd7fb6cb2b
+
+	measure 'Meta Pareto 80%' = 0.8
+		formatString: 0\ %;-0\ %;0\ %
+		displayFolder: 05 Pareto
+		lineageTag: 3223df67-d78d-4e4b-8591-f946044f3d59
+
+	/// Llave a Fecha.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8b044f3a-019d-5c94-93c1-74c2a62f4158
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Maquina.
+	column maquina_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6400359c-c59c-515a-b2bb-880a019b1c09
+		summarizeBy: none
+		sourceColumn: maquina_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Turno.
+	column turno_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5a1e2bf6-2825-5776-aeda-df0fd632711f
+		summarizeBy: none
+		sourceColumn: turno_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Referencia.
+	column referencia_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d97cc366-5f35-59d1-826c-7aca7b3c5523
+		summarizeBy: none
+		sourceColumn: referencia_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Paro.
+	column paro_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 27ce1a94-d835-5ac9-905a-888adb8f6ca6
+		summarizeBy: none
+		sourceColumn: paro_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Duracion del paro en minutos, tal como la registra la fuente.
+	column minutos_paro
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: a5ff1d4c-b7bb-5c15-b433-d92dab950012
+		summarizeBy: sum
+		sourceColumn: minutos_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Duracion del paro en horas.
+	column horas_paro
+		dataType: double
+		isHidden
+		formatString: 0.000
+		lineageTag: d5755be0-998d-5989-ae90-920c05cb3828
+		summarizeBy: sum
+		sourceColumn: horas_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unidades que se dejaron de producir por este paro.
+	column unidades_no_producidas
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 394a56a2-331b-5de2-8796-926e23c929b0
+		summarizeBy: sum
+		sourceColumn: unidades_no_producidas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el paro es planeado.
+	column es_paro_planeado
+		dataType: boolean
+		lineageTag: 1f38b63d-03f2-55d8-bd59-2cfdebfd5eb3
+		summarizeBy: none
+		sourceColumn: es_paro_planeado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si la causa raiz no venia especificada en la fuente.
+	column subcodigo_imputado
+		dataType: boolean
+		lineageTag: be417d65-2f9c-57d1-8445-133eb95a85c1
+		summarizeBy: none
+		sourceColumn: subcodigo_imputado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Observacion libre que escribio mantenimiento.
+	column observacion_paro
+		dataType: string
+		lineageTag: 6881a8f6-808a-58a3-ac5c-85ed4efc965f
+		summarizeBy: none
+		sourceColumn: observacion_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Eventos de paro' = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="hecho_paro"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"fecha_key", "maquina_key", "turno_key", "referencia_key", "paro_key", "minutos_paro", "horas_paro", "unidades_no_producidas", "es_paro_planeado", "subcodigo_imputado", "observacion_paro"})
+				in
+				    Columnas
+
+	annotation PBI_ResultType = Table
+

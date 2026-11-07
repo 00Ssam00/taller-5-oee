@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "1d9aaaca-4496-53f7-b27f-924ff966e364",
+  "displayName": "Drill-down de paros",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

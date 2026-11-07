@@ -1,0 +1,23 @@
+model Model
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-CO
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Origen BI-OEE", "Fecha", "Maquina", "Turno", "Referencia", "Paro", "Operario", "Produccion por turno", "Eventos de paro"]
+
+annotation PBI_ProTooling = ["TMDL","DevMode"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+ref table Fecha
+ref table Maquina
+ref table Turno
+ref table Referencia
+ref table Paro
+ref table Operario
+ref table 'Produccion por turno'
+ref table 'Eventos de paro'
+

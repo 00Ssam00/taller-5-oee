@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "1fa0f2a13708a7884a58",
+  "position": {
+    "x": 640,
+    "y": 512.22222222222217,
+    "z": 2,
+    "height": 207.77777777777777,
+    "width": 638.88888888888891,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fecha"
+                    }
+                  },
+                  "Property": "anio"
+                }
+              },
+              "queryRef": "Fecha.anio",
+              "nativeQueryRef": "anio"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Turnos registrados"
+                }
+              },
+              "queryRef": "Produccion por turno.Turnos registrados",
+              "nativeQueryRef": "Turnos registrados"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Turnos sin estandar"
+                }
+              },
+              "queryRef": "Produccion por turno.Turnos sin estandar",
+              "nativeQueryRef": "Turnos sin estandar"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Indice de completitud del registro"
+                }
+              },
+              "queryRef": "Produccion por turno.Indice de completitud del registro",
+              "nativeQueryRef": "Indice de completitud del registro"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

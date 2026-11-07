@@ -1,0 +1,190 @@
+/// Dimension de calendario construida por el equipo. Cubre 2022-2026 e
+/// incluye los festivos de Colombia calculados con la Ley 51 de 1983
+/// (Emiliani). Es la tabla marcada como tabla de fechas, requisito para las
+/// funciones de inteligencia de tiempo de DAX.
+table Fecha
+	lineageTag: 437470db-25d8-5998-bccd-c7944105f248
+	dataCategory: Time
+
+	/// Llave surrogada con formato AAAAMMDD.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: deece33f-8e3d-5c16-b9f0-5042a6f54b41
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Fecha del calendario. Columna marcada como fecha del modelo.
+	column fecha
+		dataType: dateTime
+		isKey
+		formatString: dd/MM/yyyy
+		lineageTag: 5fdc2dc0-abea-599e-937e-2036be5c76c9
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Ano del calendario.
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 45f023dd-42b5-5620-aa31-0519033a903f
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de trimestre, 1 a 4.
+	column trimestre
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 22c20800-68c4-5775-a9d7-4da2c346c7d3
+		summarizeBy: none
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Trimestre como texto, por ejemplo T1.
+	column nombre_trimestre
+		dataType: string
+		lineageTag: 3616c7b6-b904-516f-808d-8b6c7bab320b
+		summarizeBy: none
+		sourceColumn: nombre_trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de mes, 1 a 12. Ordena el nombre del mes.
+	column mes
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f9eda25c-969a-5924-a9c5-fa1226703110
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre del mes en espanol.
+	column nombre_mes
+		dataType: string
+		lineageTag: f406eea4-a0a7-5a33-b1c4-6a0b8fd86e3f
+		summarizeBy: none
+		sourceColumn: nombre_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Periodo como entero AAAAMM, para ordenar.
+	column anio_mes
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a955963c-33cd-5602-9b77-2755cce1ada4
+		summarizeBy: none
+		sourceColumn: anio_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Periodo legible, por ejemplo 2024-03.
+	column etiqueta_anio_mes
+		dataType: string
+		lineageTag: 34fc365d-ca56-5236-a532-e12d155cb450
+		summarizeBy: none
+		sourceColumn: etiqueta_anio_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dia del mes.
+	column dia
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b6cc455c-8b48-5af7-ba33-4b19e673b878
+		summarizeBy: none
+		sourceColumn: dia
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre del dia de la semana.
+	column nombre_dia
+		dataType: string
+		lineageTag: a6da00a2-70e3-54f8-817e-ec5ac2e23def
+		summarizeBy: none
+		sourceColumn: nombre_dia
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dia de la semana ISO, 1 lunes a 7 domingo.
+	column dia_semana_iso
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 890afd11-da5c-5fd1-83fa-7a89c8836e5c
+		summarizeBy: none
+		sourceColumn: dia_semana_iso
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de semana ISO.
+	column semana_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: 30c24f5c-214f-5a5c-bcb5-d73e607663ae
+		summarizeBy: none
+		sourceColumn: semana_iso
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si es festivo en Colombia.
+	column es_festivo
+		dataType: boolean
+		lineageTag: cab1b1f1-45ae-5a9b-9a54-d60ee7bfd685
+		summarizeBy: none
+		sourceColumn: es_festivo
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si no es fin de semana ni festivo.
+	column es_dia_habil
+		dataType: boolean
+		lineageTag: b3f421c4-6726-57c6-8030-c4145dc46cd6
+		summarizeBy: none
+		sourceColumn: es_dia_habil
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Jerarquia de calendario para navegar de ano a dia.
+	hierarchy Calendario
+		lineageTag: b88d41ce-0331-5411-8e71-0f3c05c1aa54
+
+		level Ano
+			lineageTag: ca7c6bce-5412-581c-bc5c-7b32ca7acd34
+			column: anio
+
+		level Trimestre
+			lineageTag: 32c33485-fe18-5f3f-a5aa-5f6f2a1e8517
+			column: nombre_trimestre
+
+		level Mes
+			lineageTag: a5dd30ae-c4c6-5e21-a90d-5d520b9c5b7e
+			column: nombre_mes
+
+		level Dia
+			lineageTag: 987ec55b-a3cc-5b75-bd33-b441d9e10ed7
+			column: dia
+
+	partition Fecha = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_fecha"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"fecha_key", "fecha", "anio", "trimestre", "nombre_trimestre", "mes", "nombre_mes", "anio_mes", "etiqueta_anio_mes", "dia", "nombre_dia", "dia_semana_iso", "semana_iso", "es_festivo", "es_dia_habil"})
+				in
+				    Columnas
+

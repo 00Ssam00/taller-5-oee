@@ -1,0 +1,130 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "dc80e954de4701e7de84",
+  "position": {
+    "x": 255.55555555555554,
+    "y": 0,
+    "z": 0,
+    "height": 242.22222222222223,
+    "width": 1024.4444444444443,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "OEE"
+                }
+              },
+              "queryRef": "Produccion por turno.OEE",
+              "nativeQueryRef": "OEE"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Disponibilidad"
+                }
+              },
+              "queryRef": "Produccion por turno.Disponibilidad",
+              "nativeQueryRef": "Disponibilidad"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Rendimiento"
+                }
+              },
+              "queryRef": "Produccion por turno.Rendimiento",
+              "nativeQueryRef": "Rendimiento"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Calidad (proxy)"
+                }
+              },
+              "queryRef": "Produccion por turno.Calidad (proxy)",
+              "nativeQueryRef": "Calidad (proxy)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Produccion por turno"
+                    }
+                  },
+                  "Property": "Variacion de OEE interanual"
+                }
+              },
+              "queryRef": "Produccion por turno.Variacion de OEE interanual",
+              "nativeQueryRef": "Variacion de OEE interanual"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Produccion por turno"
+                  }
+                },
+                "Property": "OEE"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "label": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Produccion por turno.Variacion de OEE interanual"
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

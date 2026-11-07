@@ -1,0 +1,64 @@
+/// Personal de envasado PSEUDONIMIZADO. Solo contiene el alias 'Operario
+/// NNN'. El nombre real vive en el esquema pii, al que el rol de lectura que
+/// usa Power BI NO tiene acceso, de modo que el informe no puede
+/// reidentificar a nadie ni por error.
+table Operario
+	lineageTag: 29ef4765-d8a2-5482-a10b-71f0166e36d0
+
+	/// Llave surrogada.
+	column operario_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b7b7723e-ee0c-58bd-aa8f-bf40f6aa0694
+		summarizeBy: none
+		sourceColumn: operario_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Alias pseudonimizado del operario.
+	column alias_operario
+		dataType: string
+		lineageTag: 8d498a37-ed05-5e24-b7e8-629aa9ac1a7c
+		summarizeBy: none
+		sourceColumn: alias_operario
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Rol del trabajador.
+	column rol
+		dataType: string
+		lineageTag: b2cc0358-91bc-5839-a02b-a28cf0fea482
+		summarizeBy: none
+		sourceColumn: rol
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Falso para el miembro 'Sin informar'.
+	column es_identificado
+		dataType: boolean
+		lineageTag: 1623d47e-e232-5753-a469-600cdea56001
+		summarizeBy: none
+		sourceColumn: es_identificado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de turnos en que aparece.
+	column turnos_registrados
+		dataType: int64
+		formatString: 0
+		lineageTag: db46d2bf-3a0a-5612-83f3-7be36fce4693
+		summarizeBy: none
+		sourceColumn: turnos_registrados
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Operario = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_operario"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"operario_key", "alias_operario", "rol", "es_identificado", "turnos_registrados"})
+				in
+				    Columnas
+

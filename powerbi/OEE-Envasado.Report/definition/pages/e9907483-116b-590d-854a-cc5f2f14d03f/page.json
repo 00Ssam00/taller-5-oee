@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "e9907483-116b-590d-854a-cc5f2f14d03f",
+  "displayName": "Calidad del dato",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "pageBinding": {
+    "name": "07ab6aa499305d47cd3d",
+    "type": "Default",
+    "parameters": []
+  }
+}

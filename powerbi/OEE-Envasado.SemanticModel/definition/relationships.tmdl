@@ -1,0 +1,40 @@
+relationship 1cf9e910-5b24-50d8-8348-2901c6792786
+	fromColumn: 'Produccion por turno'.fecha_key
+	toColumn: Fecha.fecha_key
+
+relationship 1b072a1a-232e-520e-bbdb-8c80142ab2fb
+	fromColumn: 'Produccion por turno'.maquina_key
+	toColumn: Maquina.maquina_key
+
+relationship fdcdd7e1-1565-5fff-8636-ed5fb308dabe
+	fromColumn: 'Produccion por turno'.turno_key
+	toColumn: Turno.turno_key
+
+relationship e71fedb6-0ea4-5ca9-a49b-96b008e8f0f8
+	fromColumn: 'Produccion por turno'.operario_key
+	toColumn: Operario.operario_key
+
+relationship 996ce7c2-b13c-599d-b0f1-a11bde836146
+	fromColumn: 'Produccion por turno'.referencia_key
+	toColumn: Referencia.referencia_key
+
+relationship 30db4a6b-b1c1-55d3-a283-818f458a871a
+	fromColumn: 'Eventos de paro'.fecha_key
+	toColumn: Fecha.fecha_key
+
+relationship f16c925f-3e62-5cd2-9007-82d641f334b8
+	fromColumn: 'Eventos de paro'.maquina_key
+	toColumn: Maquina.maquina_key
+
+relationship b398fcc9-7c3e-54a6-b99a-e0ceed8d2bb5
+	fromColumn: 'Eventos de paro'.turno_key
+	toColumn: Turno.turno_key
+
+relationship 55f659c6-c811-5930-a4cf-245a4fc1bc42
+	fromColumn: 'Eventos de paro'.referencia_key
+	toColumn: Referencia.referencia_key
+
+relationship 24c8dbb6-53c5-5c58-be60-0dd9c7217845
+	fromColumn: 'Eventos de paro'.paro_key
+	toColumn: Paro.paro_key
+

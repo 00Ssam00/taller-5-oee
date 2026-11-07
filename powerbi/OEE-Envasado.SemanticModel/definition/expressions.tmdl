@@ -1,0 +1,21 @@
+/// Conexion unica a la base de datos del almacen. Todas las tablas del
+/// modelo se alimentan de aqui, de modo que cambiar de servidor es cambiar
+/// una sola linea. La contrasena NO se guarda en el proyecto: Power BI la
+/// pide al abrir y la almacena en el administrador de credenciales de
+/// Windows, por lo que el repositorio queda sin credenciales.
+expression 'Origen BI-OEE' =
+		let
+		    // Servidor de PostgreSQL. "localhost" vale cuando Power BI y Docker
+		    // corren en la MISMA maquina (Windows con Docker Desktop).
+		    // Si la base corre en otro equipo, poner aqui su IP, por ejemplo
+		    // "192.168.1.49:55432". El puerto va con DOS PUNTOS, no con coma:
+		    // la coma es la sintaxis de SQL Server, no la de PostgreSQL.
+		    Servidor = "localhost:55432",
+		    BaseDeDatos = "bi_oee",
+		    Origen = PostgreSQL.Database(Servidor, BaseDeDatos)
+		in
+		    Origen
+	lineageTag: 3d14c6d3-23b8-55a3-8838-6f18ba7c206c
+
+	annotation PBI_ResultType = Table
+

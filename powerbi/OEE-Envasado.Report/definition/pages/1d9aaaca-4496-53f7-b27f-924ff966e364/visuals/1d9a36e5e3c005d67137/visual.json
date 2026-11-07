@@ -1,0 +1,261 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "1d9a36e5e3c005d67137",
+  "position": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "height": 720,
+    "width": 1114.4444444444443,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "barChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Paro"
+                        }
+                      },
+                      "Hierarchy": "Jerarquia de paros"
+                    }
+                  },
+                  "Level": "Area responsable"
+                }
+              },
+              "queryRef": "Paro.Jerarquia de paros.Area responsable",
+              "nativeQueryRef": "Jerarquia de paros Area responsable",
+              "active": true
+            },
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Paro"
+                        }
+                      },
+                      "Hierarchy": "Jerarquia de paros"
+                    }
+                  },
+                  "Level": "Codigo de paro"
+                }
+              },
+              "queryRef": "Paro.Jerarquia de paros.Codigo de paro",
+              "nativeQueryRef": "Jerarquia de paros Codigo de paro",
+              "active": true
+            },
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Paro"
+                        }
+                      },
+                      "Hierarchy": "Jerarquia de paros"
+                    }
+                  },
+                  "Level": "Sistema de la maquina"
+                }
+              },
+              "queryRef": "Paro.Jerarquia de paros.Sistema de la maquina",
+              "nativeQueryRef": "Jerarquia de paros Sistema de la maquina",
+              "active": true
+            },
+            {
+              "field": {
+                "HierarchyLevel": {
+                  "Expression": {
+                    "Hierarchy": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "Paro"
+                        }
+                      },
+                      "Hierarchy": "Jerarquia de paros"
+                    }
+                  },
+                  "Level": "Causa raiz"
+                }
+              },
+              "queryRef": "Paro.Jerarquia de paros.Causa raiz",
+              "nativeQueryRef": "Jerarquia de paros Causa raiz",
+              "active": false
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Horas perdidas"
+                }
+              },
+              "queryRef": "Eventos de paro.Horas perdidas",
+              "nativeQueryRef": "Horas perdidas"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Eventos de paro"
+                  }
+                },
+                "Property": "Horas perdidas"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "40ddd4d758544ae3de39",
+        "field": {
+          "HierarchyLevel": {
+            "Expression": {
+              "Hierarchy": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Paro"
+                  }
+                },
+                "Hierarchy": "Jerarquia de paros"
+              }
+            },
+            "Level": "Area responsable"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "p",
+              "Entity": "Paro",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "p"
+                          }
+                        },
+                        "Property": "area_impacto"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Mantenimiento'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "Drill"
+      },
+      {
+        "name": "16b852d4cc20e87c96cb",
+        "field": {
+          "HierarchyLevel": {
+            "Expression": {
+              "Hierarchy": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Paro"
+                  }
+                },
+                "Hierarchy": "Jerarquia de paros"
+              }
+            },
+            "Level": "Codigo de paro"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "p",
+              "Entity": "Paro",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "p"
+                          }
+                        },
+                        "Property": "etiqueta_codigo_paro"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'[01] Falla del sistema electromecanico y/o de control'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "Drill"
+      }
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+/// Catalogo de productos envasados, depurado: la fuente traia 52 referencias
+/// con erratas de digitacion que se consolidaron en 63 miembros limpios.
+table Referencia
+	lineageTag: 826286fe-c79b-552d-a906-ceb71c1cf691
+
+	/// Llave surrogada.
+	column referencia_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f06a01fe-d749-5f82-b752-e61a715d8ffa
+		summarizeBy: none
+		sourceColumn: referencia_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre de la referencia.
+	column nombre_referencia
+		dataType: string
+		lineageTag: 67605b91-a1f0-5eeb-9162-f0426db1a318
+		summarizeBy: none
+		sourceColumn: nombre_referencia
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Linea comercial del producto.
+	column linea_comercial
+		dataType: string
+		lineageTag: 6d42dd9c-dec3-5b97-95db-ffeffc7de457
+		summarizeBy: none
+		sourceColumn: linea_comercial
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Volumen del envase en centimetros cubicos.
+	column volumen_cc
+		dataType: double
+		formatString: 0.0
+		lineageTag: 33b9f514-66f4-58b7-8e19-78c03ac896ab
+		summarizeBy: none
+		sourceColumn: volumen_cc
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Presentacion legible del producto.
+	column etiqueta_presentacion
+		dataType: string
+		lineageTag: 8601f307-4cf1-5d19-8519-a74f691a9668
+		summarizeBy: none
+		sourceColumn: etiqueta_presentacion
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de colores de la presentacion.
+	column numero_colores
+		dataType: int64
+		formatString: 0
+		lineageTag: c93774e0-b3be-5486-9812-b8d06b4bfc32
+		summarizeBy: none
+		sourceColumn: numero_colores
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unidades que contiene una paca. Convierte pacas a unidades
+	/// comparables.
+	column unidades_por_paca
+		dataType: int64
+		formatString: 0
+		lineageTag: 05f38e06-9601-59e0-917f-c37260051e40
+		summarizeBy: none
+		sourceColumn: unidades_por_paca
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero para el miembro de relleno.
+	column es_no_aplica
+		dataType: boolean
+		lineageTag: 3bcf3505-4493-5aee-8bed-b228a2eb88e1
+		summarizeBy: none
+		sourceColumn: es_no_aplica
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Referencia = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_referencia"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"referencia_key", "nombre_referencia", "linea_comercial", "volumen_cc", "etiqueta_presentacion", "numero_colores", "unidades_por_paca", "es_no_aplica"})
+				in
+				    Columnas
+
+	annotation PBI_ResultType = Table
+

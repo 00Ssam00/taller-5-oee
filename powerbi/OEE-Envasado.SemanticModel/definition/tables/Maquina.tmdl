@@ -1,0 +1,83 @@
+/// Las cuatro lineas de envasado. El factor de produccion es el multiplicador
+/// de capacidad de la linea, que estaba escondido dentro de una formula de
+/// texto en la hoja Tiempos del Excel.
+table Maquina
+	lineageTag: 8a652d8b-809f-5d4d-839b-8d5e5ab53152
+
+	/// Llave surrogada.
+	column maquina_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 66bbc947-b16e-599e-a205-fd39ad3b865e
+		summarizeBy: none
+		sourceColumn: maquina_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Codigo de la linea, Vinilos_1 a Vinilos_4.
+	column codigo_maquina
+		dataType: string
+		lineageTag: ea28729d-60c4-5e62-9ac7-22ab9ac66776
+		summarizeBy: none
+		sourceColumn: codigo_maquina
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre legible de la linea.
+	column nombre_maquina
+		dataType: string
+		lineageTag: 43bf0b39-3545-53ab-8e7a-8824e6a90f74
+		summarizeBy: none
+		sourceColumn: nombre_maquina
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de linea, para ordenar.
+	column numero_linea
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9a43f6a6-048e-55c4-888b-87334775de71
+		summarizeBy: none
+		sourceColumn: numero_linea
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Familia de producto que envasa la linea.
+	column familia_producto
+		dataType: string
+		lineageTag: 6fd0f22d-cfe1-54c0-ab34-e38cfc8a48ac
+		summarizeBy: none
+		sourceColumn: familia_producto
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Agrupacion por capacidad relativa.
+	column grupo_capacidad
+		dataType: string
+		lineageTag: c2513722-cb92-5bb7-927d-bd9552b608a0
+		summarizeBy: none
+		sourceColumn: grupo_capacidad
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Multiplicador de capacidad de la linea.
+	column factor_produccion
+		dataType: double
+		formatString: 0.000
+		lineageTag: 2078d22b-74bc-5aa2-98ab-5205cd2ebea2
+		summarizeBy: none
+		sourceColumn: factor_produccion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Maquina = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_maquina"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"maquina_key", "codigo_maquina", "nombre_maquina", "numero_linea", "familia_producto", "grupo_capacidad", "factor_produccion"})
+				in
+				    Columnas
+

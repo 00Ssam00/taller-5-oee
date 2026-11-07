@@ -1,0 +1,91 @@
+/// Los turnos de trabajo. Incluye los miembros de relleno 'No aplica' y
+/// 'Descanso' para no usar NULL en la tabla de hechos.
+table Turno
+	lineageTag: c693af36-f5b1-5451-b1c8-0ef84506ddab
+
+	/// Llave surrogada.
+	column turno_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 815e169b-5f08-5cf0-a913-77aea5d4139a
+		summarizeBy: none
+		sourceColumn: turno_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Codigo corto del turno.
+	column codigo_turno
+		dataType: string
+		lineageTag: b5de7680-f8b7-5fc2-a554-4c38c958067a
+		summarizeBy: none
+		sourceColumn: codigo_turno
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Nombre del turno con su horario.
+	column nombre_turno
+		dataType: string
+		lineageTag: be301c41-57f0-5d0c-87e6-f6dc8906e26c
+		summarizeBy: none
+		sourceColumn: nombre_turno
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Duracion nominal del turno en horas.
+	column duracion_horas
+		dataType: double
+		formatString: 0.0
+		lineageTag: c46c3244-c829-5286-8fe2-5e386cdfa3cc
+		summarizeBy: none
+		sourceColumn: duracion_horas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Ordinario, Extendido o No aplica.
+	column tipo_jornada
+		dataType: string
+		lineageTag: a0dc9d02-e8bc-586b-906d-d2e6083647a4
+		summarizeBy: none
+		sourceColumn: tipo_jornada
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el turno es nocturno.
+	column es_nocturno
+		dataType: boolean
+		lineageTag: 203cbb7b-2e3d-5462-a396-ba912b992ef8
+		summarizeBy: none
+		sourceColumn: es_nocturno
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Orden de presentacion del turno.
+	column orden_presentacion
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9a359d5f-6f0c-5159-a93a-ed9541a645f6
+		summarizeBy: none
+		sourceColumn: orden_presentacion
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Falso para los miembros de relleno.
+	column es_valido
+		dataType: boolean
+		lineageTag: a475beb3-80ac-52d7-91c1-2220b6eb0360
+		summarizeBy: none
+		sourceColumn: es_valido
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Turno = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="dim_turno"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"turno_key", "codigo_turno", "nombre_turno", "duracion_horas", "tipo_jornada", "es_nocturno", "orden_presentacion", "es_valido"})
+				in
+				    Columnas
+

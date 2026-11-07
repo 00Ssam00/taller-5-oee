@@ -1,0 +1,522 @@
+/// TABLA DE HECHOS. Grano declarado: un registro por turno de produccion de
+/// una maquina en una fecha, para una referencia. 5.138 filas.
+table 'Produccion por turno'
+	lineageTag: a98f3d00-baff-5742-8528-34fdbdd78869
+
+	/// Horas que la planta programo para producir. Es el denominador de la
+	/// Disponibilidad.
+	measure 'Horas programadas' = SUM('Produccion por turno'[horas_programadas])
+		formatString: #,0.0
+		displayFolder: 01 Tiempo
+		lineageTag: fb345bbe-ae3c-5d64-87b9-914d07bdb4c8
+
+	/// Horas en que la linea estuvo efectivamente produciendo.
+	measure 'Horas operativas' = SUM('Produccion por turno'[horas_operativas])
+		formatString: #,0.0
+		displayFolder: 01 Tiempo
+		lineageTag: 08c10a21-5a8e-5a0b-8396-d5cd6ef1da3e
+
+	/// Tiempo total perdido por paros.
+	measure 'Horas de paro' = SUM('Produccion por turno'[horas_paro_total])
+		formatString: #,0.0
+		displayFolder: 01 Tiempo
+		lineageTag: 58637573-ed7b-546e-a348-12f3370b7885
+
+	/// Tiempo perdido EVITABLE. Es la cifra sobre la que se puede actuar.
+	measure 'Horas de paro no planeado' = SUM('Produccion por turno'[horas_paro_no_planeado])
+		formatString: #,0.0
+		displayFolder: 01 Tiempo
+		lineageTag: 685f3378-6b3c-5380-b390-13dc791ae74b
+
+	/// Que proporcion del tiempo perdido era evitable.
+	measure '% de paro evitable' = DIVIDE([Horas de paro no planeado], [Horas de paro])
+		formatString: 0.0%
+		displayFolder: 01 Tiempo
+		lineageTag: 5a49db36-80cb-5eb7-bd38-7e88d94ab107
+
+	/// Primer componente del OEE. REPRODUCE EXACTAMENTE el '% Productividad'
+	/// que el Excel calcula hoy: se verifico a seis decimales contra las
+	/// tablas dinamicas de la fuente.
+	measure Disponibilidad = DIVIDE([Horas operativas], [Horas programadas])
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: 7a1419ea-b8a9-5ca5-9e78-ece7b1b4b741
+
+	/// Denominador del factor de Disponibilidad DENTRO del OEE. Se restringe
+	/// al mismo subconjunto de turnos que el Rendimiento para que el producto
+	/// de los dos factores sea coherente: ambos miden la misma poblacion.
+	measure 'Horas programadas (OEE)' =
+			CALCULATE(
+			    SUM('Produccion por turno'[horas_programadas]),
+			    'Produccion por turno'[tiene_estandar] = TRUE(),
+			    'Produccion por turno'[rendimiento_implausible] = FALSE()
+			)
+		formatString: #,0.0
+		displayFolder: 02 OEE
+		lineageTag: 582ad91a-ee65-52be-baa9-ac4ee165e1b1
+
+	/// Numerador del factor de Disponibilidad dentro del OEE, sobre los mismos
+	/// turnos auditables que el Rendimiento.
+	measure 'Horas operativas (OEE)' =
+			CALCULATE(
+			    SUM('Produccion por turno'[horas_operativas]),
+			    'Produccion por turno'[tiene_estandar] = TRUE(),
+			    'Produccion por turno'[rendimiento_implausible] = FALSE()
+			)
+		formatString: #,0.0
+		displayFolder: 02 OEE
+		lineageTag: 5287515b-2964-5c3f-9c64-e9df2c8fa23d
+
+	/// Factor de Disponibilidad que entra en el OEE. NO es el mismo que la
+	/// medida 'Disponibilidad': esa se calcula sobre TODOS los turnos porque
+	/// solo necesita horas, y es la que reproduce el '% Productividad' del
+	/// Excel. Esta se limita a los turnos con estandar para no multiplicar dos
+	/// factores medidos sobre poblaciones distintas.
+	measure 'Disponibilidad (OEE)' = DIVIDE([Horas operativas (OEE)], [Horas programadas (OEE)])
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: 040e6d20-9b98-5c6c-9f8a-2c6913b78643
+
+	/// Que porcentaje de los turnos del periodo entra en el calculo del OEE.
+	/// Hay que declararla junto al OEE: en 2023 solo el 24 % de los turnos
+	/// tiene estandar de ingenieria, asi que el OEE de ese ano describe una
+	/// cuarta parte de la operacion.
+	measure 'Cobertura del OEE' =
+			DIVIDE(
+			    CALCULATE(
+			        [Turnos registrados],
+			        'Produccion por turno'[tiene_estandar] = TRUE(),
+			        'Produccion por turno'[rendimiento_implausible] = FALSE()
+			    ),
+			    [Turnos registrados]
+			)
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: 619244f9-9c14-53e0-8fbf-c92cef6187a4
+
+	/// Unidades producidas, contando solo los turnos con estandar de
+	/// ingenieria y excluyendo los 22 turnos con rendimiento implausible. El
+	/// filtro es deliberado: sin estandar no hay con que comparar, y un dato
+	/// erroneo inflaria el indicador.
+	measure 'Unidades producidas' =
+			CALCULATE(
+			    SUM('Produccion por turno'[unidades_producidas]),
+			    'Produccion por turno'[tiene_estandar] = TRUE(),
+			    'Produccion por turno'[rendimiento_implausible] = FALSE()
+			)
+		formatString: #,0
+		displayFolder: 02 OEE
+		lineageTag: c5070d04-e6d8-5f37-b4bc-49dbc4370520
+
+	/// Unidades que el estandar de ingenieria permitiria producir en el
+	/// tiempo que la linea estuvo operando.
+	measure 'Unidades posibles' =
+			CALCULATE(
+			    SUM('Produccion por turno'[unidades_posibles]),
+			    'Produccion por turno'[tiene_estandar] = TRUE(),
+			    'Produccion por turno'[rendimiento_implausible] = FALSE()
+			)
+		formatString: #,0
+		displayFolder: 02 OEE
+		lineageTag: 9eccd919-2f2a-5685-a58d-e2df3ee1809d
+
+	/// Segundo componente del OEE. El Excel NO lo calcula: es uno de los
+	/// indicadores nuevos que habilita este modelo.
+	measure Rendimiento = DIVIDE([Unidades producidas], [Unidades posibles])
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: cee456fd-957f-5ba2-b99b-85faaa321f75
+
+	/// Tercer componente del OEE, como PROXY declarado. La fuente no registra
+	/// unidades defectuosas, asi que la perdida de calidad se estima con el
+	/// tiempo de reproceso (codigo 11). Es una COTA INFERIOR de la perdida
+	/// real: el OEE verdadero no puede ser mayor que este.
+	measure 'Calidad (proxy)' =
+			VAR Reproceso =
+			    CALCULATE(
+			        SUM('Eventos de paro'[unidades_no_producidas]),
+			        'Paro'[codigo_paro] = "11"
+			    )
+			VAR Producidas = [Unidades producidas]
+			RETURN
+			    IF(
+			        Producidas > 0,
+			        1 - DIVIDE(Reproceso, Producidas)
+			    )
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: b805145d-24ad-5dee-8ed4-30fe0d8e886a
+
+	/// OEE auditable: Disponibilidad por Rendimiento, ambos medidos sobre los
+	/// MISMOS turnos (los que tienen estandar y rendimiento plausible). Se
+	/// agrega como razon de sumas, no como promedio de los OEE por turno, para
+	/// que valga en cualquier nivel de la jerarquia. Declarar siempre la
+	/// 'Cobertura del OEE' al lado.
+	measure OEE = [Disponibilidad (OEE)] * [Rendimiento]
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: ef5f2839-cfbd-58b9-8ac9-2460b4be015b
+
+	/// OEE con los tres componentes, usando el proxy de Calidad. Se presenta
+	/// junto al OEE auditable para dejar claro cuanto pesa la parte estimada.
+	measure 'OEE completo' = [Disponibilidad (OEE)] * [Rendimiento] * [Calidad (proxy)]
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: 0137c991-a914-50bb-a9bd-b300687d7812
+
+	/// Meta del 65%. No es arbitraria: es el nivel que Vinilos_3 y Vinilos_4
+	/// ya sostienen con los mismos equipos y el mismo producto, asi que esta
+	/// demostrado que es alcanzable.
+	measure 'Meta de OEE' = 0.65
+		formatString: 0.0%
+		displayFolder: 02 OEE
+		lineageTag: d4a3e22d-cdd8-54ae-abb8-18e07c19b5f9
+
+	/// Puntos porcentuales por encima o por debajo de la meta.
+	measure 'Brecha vs meta' = [OEE] - [Meta de OEE]
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 02 OEE
+		lineageTag: fdbef703-e236-5954-adca-126ab86bbdc8
+
+	/// MEDIDA DE INTELIGENCIA DE TIEMPO. El mismo periodo del ano anterior,
+	/// usando SAMEPERIODLASTYEAR sobre la tabla de fechas marcada. Permite
+	/// comparar marzo contra marzo sin que la estacionalidad distorsione la
+	/// lectura.
+	measure 'OEE del ano anterior' =
+			CALCULATE(
+			    [OEE],
+			    SAMEPERIODLASTYEAR('Fecha'[fecha])
+			)
+		formatString: 0.0%
+		displayFolder: 03 Inteligencia de tiempo
+		lineageTag: 258ee9d9-2b6e-5c6b-b2a8-fa0783298d03
+
+	/// Cuantos puntos porcentuales gano o perdio la linea frente al mismo
+	/// periodo del ano pasado. Devuelve vacio si falta alguno de los dos
+	/// periodos, para no mostrar una caida del 100% donde en realidad no hay
+	/// dato comparable.
+	measure 'Variacion de OEE interanual' =
+			VAR Actual = [OEE]
+			VAR Anterior = [OEE del ano anterior]
+			RETURN
+			    IF(
+			        NOT ISBLANK(Actual) && NOT ISBLANK(Anterior),
+			        Actual - Anterior
+			    )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 03 Inteligencia de tiempo
+		lineageTag: 892c6a09-6d59-5eae-9e78-af8c2a60427c
+
+	/// OEE acumulado del ano hasta la fecha, con TOTALYTD. Es la cifra que se
+	/// presenta en el comite: suaviza el mes malo aislado.
+	measure 'OEE acumulado del ano' = TOTALYTD([OEE], 'Fecha'[fecha])
+		formatString: 0.0%
+		displayFolder: 03 Inteligencia de tiempo
+		lineageTag: 4b3a69f3-f320-54a4-883d-d21f1fefc498
+
+	/// Tiempo perdido en el mismo periodo del ano anterior.
+	measure 'Horas de paro del ano anterior' =
+			CALCULATE(
+			    [Horas de paro],
+			    SAMEPERIODLASTYEAR('Fecha'[fecha])
+			)
+		formatString: #,0.0
+		displayFolder: 03 Inteligencia de tiempo
+		lineageTag: b72cc462-48ab-5266-a2c5-a959bad79544
+
+	/// Promedio movil de tres meses con DATESINPERIOD. Aisla la tendencia del
+	/// ruido de un mes suelto.
+	measure 'Disponibilidad movil 3 meses' =
+			VAR Ultimo = MAX('Fecha'[fecha])
+			RETURN
+			    CALCULATE(
+			        [Disponibilidad],
+			        DATESINPERIOD('Fecha'[fecha], Ultimo, -3, MONTH)
+			    )
+		formatString: 0.0%
+		displayFolder: 03 Inteligencia de tiempo
+		lineageTag: a21ee203-2e46-5b7c-baa0-e184a2971abc
+
+	/// Tiempo medio entre fallas, en horas operativas. Sube cuando la
+	/// confiabilidad mejora.
+	measure MTBF =
+			VAR Fallas =
+			    CALCULATE(
+			        COUNTROWS('Eventos de paro'),
+			        'Paro'[codigo_paro] IN {"01", "02"}
+			    )
+			RETURN
+			    DIVIDE([Horas operativas], Fallas)
+		formatString: #,0.0
+		displayFolder: 06 Confiabilidad
+		lineageTag: 79dd2be2-21ff-5641-bcea-205d52956540
+
+	/// Numero de turnos cargados.
+	measure 'Turnos registrados' = COUNTROWS('Produccion por turno')
+		formatString: #,0
+		displayFolder: 07 Gobierno del dato
+		lineageTag: 9d42895e-5b9d-5dc2-9793-7e31faca0cf3
+
+	/// INDICADOR NUEVO. Mide que tan completo llega el formato hora a hora.
+	/// Pasa de 0% en 2022 a 100% en 2025, y explica por que el Rendimiento no
+	/// es calculable antes de 2023. Sin este indicador, cualquier conclusion
+	/// del tablero es fragil.
+	measure 'Indice de completitud del registro' =
+			VAR Turnos = [Turnos registrados]
+			VAR ConOperario =
+			    CALCULATE([Turnos registrados],
+			        'Produccion por turno'[operario_no_informado] = FALSE())
+			VAR ConReferencia =
+			    CALCULATE([Turnos registrados],
+			        'Produccion por turno'[referencia_no_informada] = FALSE())
+			VAR ConTurno =
+			    CALCULATE([Turnos registrados],
+			        'Produccion por turno'[turno_imputado] = FALSE())
+			VAR ConEstandar =
+			    CALCULATE([Turnos registrados],
+			        'Produccion por turno'[tiene_estandar] = TRUE())
+			RETURN
+			    DIVIDE(ConOperario + ConReferencia + ConTurno + ConEstandar + 0, Turnos * 4)
+		formatString: 0.0%
+		displayFolder: 07 Gobierno del dato
+		lineageTag: c309fa3b-b266-5174-b255-bf9e85c141c0
+
+	/// Turnos para los que no existe estandar de ingenieria, asi que no
+	/// entran al calculo del Rendimiento.
+	measure 'Turnos sin estandar' =
+			CALCULATE([Turnos registrados],
+			    'Produccion por turno'[tiene_estandar] = FALSE())
+		formatString: #,0
+		displayFolder: 07 Gobierno del dato
+		lineageTag: 2f063213-e6c8-5c1c-a3d5-2ba55f7aa700
+
+	/// Llave a Fecha.
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 75628eda-eda1-5306-9c0c-7d9cb4b77b5d
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Maquina.
+	column maquina_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4e61f87c-60fb-5784-9f53-a5f4350a7986
+		summarizeBy: none
+		sourceColumn: maquina_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Turno.
+	column turno_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 68d2db12-c9cb-5f47-8b0e-73561faa899e
+		summarizeBy: none
+		sourceColumn: turno_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Operario.
+	column operario_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: facb2af6-7091-5f68-8ec7-afffc3b14d13
+		summarizeBy: none
+		sourceColumn: operario_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Llave a Referencia.
+	column referencia_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 854b133e-d01c-5298-8b94-f409189fa18a
+		summarizeBy: none
+		sourceColumn: referencia_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Horas trabajadas programadas en el turno.
+	column horas_programadas
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: 4dc5d33e-5506-59c0-bbe0-7d7198f296a0
+		summarizeBy: sum
+		sourceColumn: horas_programadas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Horas totales de paro del turno.
+	column horas_paro_total
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: bf816645-0ebd-5674-b6dd-f931c2806fd3
+		summarizeBy: sum
+		sourceColumn: horas_paro_total
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Horas de paro planeado.
+	column horas_paro_planeado
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: b49295b4-63e6-5373-9869-d4066373eb01
+		summarizeBy: sum
+		sourceColumn: horas_paro_planeado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Horas de paro no planeado, es decir evitable.
+	column horas_paro_no_planeado
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: 5b90b02d-4c55-579c-9ddc-d71187ada29d
+		summarizeBy: sum
+		sourceColumn: horas_paro_no_planeado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Horas programadas menos paro.
+	column horas_operativas
+		dataType: double
+		isHidden
+		formatString: 0.0
+		lineageTag: 31644b6b-1378-5390-a3db-9ea006356510
+		summarizeBy: sum
+		sourceColumn: horas_operativas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numero de eventos de paro del turno.
+	column eventos_paro
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e834c839-25af-576d-a088-b841bcdf4987
+		summarizeBy: sum
+		sourceColumn: eventos_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Pacas producidas.
+	column pacas_producidas
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: def34cc1-c1ed-5df6-b230-3a7a554bc0fb
+		summarizeBy: sum
+		sourceColumn: pacas_producidas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Pacas convertidas a unidades comparables.
+	column unidades_producidas
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 260f4f74-bc15-5c31-bd48-ddf5fca86021
+		summarizeBy: sum
+		sourceColumn: unidades_producidas
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unidades que el estandar permitiria en el tiempo operativo.
+	column unidades_posibles
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 49af6f93-d63e-5a41-b186-255fcde29070
+		summarizeBy: sum
+		sourceColumn: unidades_posibles
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unidades que se dejaron de producir por los paros.
+	column unidades_perdidas_paro
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d4b52b54-00d1-5674-bff3-fd5eab2b9f4c
+		summarizeBy: sum
+		sourceColumn: unidades_perdidas_paro
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si existe estandar de ingenieria para el par maquina-
+	/// referencia.
+	column tiene_estandar
+		dataType: boolean
+		lineageTag: 09016ccc-a0c0-58a7-80bf-b7c65aa337c5
+		summarizeBy: none
+		sourceColumn: tiene_estandar
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el rendimiento supera el 150% del maximo teorico: dato
+	/// erroneo.
+	column rendimiento_implausible
+		dataType: boolean
+		lineageTag: 39d4b415-4a30-5896-b895-28f17db53a14
+		summarizeBy: none
+		sourceColumn: rendimiento_implausible
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el formato se diligencio completo.
+	column es_registro_completo
+		dataType: boolean
+		lineageTag: 32c0f5bb-73da-56dc-b874-f641512bfd38
+		summarizeBy: none
+		sourceColumn: es_registro_completo
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si el turno se imputo porque la fuente no lo traia.
+	column turno_imputado
+		dataType: boolean
+		lineageTag: e55ef47a-e3b4-5233-bbe7-3f0abcd749ac
+		summarizeBy: none
+		sourceColumn: turno_imputado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si la fuente no registro el operario.
+	column operario_no_informado
+		dataType: boolean
+		lineageTag: 9ce989ea-6a1d-5dd6-babb-d8681f33b677
+		summarizeBy: none
+		sourceColumn: operario_no_informado
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Verdadero si la fuente no registro la referencia.
+	column referencia_no_informada
+		dataType: boolean
+		lineageTag: 93b4b84e-b78c-5972-aa87-ca7917715e0e
+		summarizeBy: none
+		sourceColumn: referencia_no_informada
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Produccion por turno' = m
+		mode: import
+		source =
+				let
+				    Tabla = #"Origen BI-OEE"{[Schema="dw",Item="hecho_produccion_turno"]}[Data],
+				    Columnas = Table.SelectColumns(Tabla, {"fecha_key", "maquina_key", "turno_key", "operario_key", "referencia_key", "horas_programadas", "horas_paro_total", "horas_paro_planeado", "horas_paro_no_planeado", "horas_operativas", "eventos_paro", "pacas_producidas", "unidades_producidas", "unidades_posibles", "unidades_perdidas_paro", "tiene_estandar", "rendimiento_implausible", "es_registro_completo", "turno_imputado", "operario_no_informado", "referencia_no_informada"})
+				in
+				    Columnas
+

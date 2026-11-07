@@ -1,0 +1,126 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 7.0466657361944769
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 338.500101757418,
+            "y": 446.59216341831495
+          },
+          "nodeIndex": "Eventos de paro",
+          "nodeLineageTag": "83de7cad-877a-5694-bc9d-9521dfca297b",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 528.16493112418073,
+            "y": 82.174359582156058
+          },
+          "nodeIndex": "Fecha",
+          "nodeLineageTag": "437470db-25d8-5998-bccd-c7944105f248",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 749.37847600091163,
+            "y": 631.96119734499257
+          },
+          "nodeIndex": "Maquina",
+          "nodeLineageTag": "8a652d8b-809f-5d4d-839b-8d5e5ab53152",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1214.0209561390675,
+            "y": 20.523275987502757
+          },
+          "nodeIndex": "Operario",
+          "nodeLineageTag": "29ef4765-d8a2-5482-a10b-71f0166e36d0",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 764.242384224027
+          },
+          "nodeIndex": "Paro",
+          "nodeLineageTag": "32faaef1-beba-58c7-afc4-327074e0396f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 940.00604469135158,
+            "y": 275.28783911413689
+          },
+          "nodeIndex": "Produccion por turno",
+          "nodeLineageTag": "a98f3d00-baff-5742-8528-34fdbdd78869",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 460.86317125992377,
+            "y": 803.50936208378039
+          },
+          "nodeIndex": "Referencia",
+          "nodeLineageTag": "826286fe-c79b-552d-a906-ceb71c1cf691",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 816.59005538662927,
+            "y": -50
+          },
+          "nodeIndex": "Turno",
+          "nodeLineageTag": "c693af36-f5b1-5451-b1c8-0ef84506ddab",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 70.95554390096882,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

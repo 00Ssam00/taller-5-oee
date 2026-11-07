@@ -1,0 +1,154 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "4e1a993092ac0dac8200",
+  "position": {
+    "x": 0,
+    "y": 400,
+    "z": 1,
+    "height": 320,
+    "width": 1280,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Paro"
+                    }
+                  },
+                  "Property": "etiqueta_codigo_paro"
+                }
+              },
+              "queryRef": "Paro.etiqueta_codigo_paro",
+              "nativeQueryRef": "etiqueta_codigo_paro"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Horas perdidas"
+                }
+              },
+              "queryRef": "Eventos de paro.Horas perdidas",
+              "nativeQueryRef": "Horas perdidas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Numero de eventos"
+                }
+              },
+              "queryRef": "Eventos de paro.Numero de eventos",
+              "nativeQueryRef": "Numero de eventos"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Duracion media del paro"
+                }
+              },
+              "queryRef": "Eventos de paro.Duracion media del paro",
+              "nativeQueryRef": "Duracion media del paro"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Unidades no producidas"
+                }
+              },
+              "queryRef": "Eventos de paro.Unidades no producidas",
+              "nativeQueryRef": "Unidades no producidas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "% acumulado de tiempo perdido"
+                }
+              },
+              "queryRef": "Eventos de paro.% acumulado de tiempo perdido",
+              "nativeQueryRef": "% acumulado de tiempo perdido"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Eventos de paro"
+                    }
+                  },
+                  "Property": "Clasificacion Pareto"
+                }
+              },
+              "queryRef": "Eventos de paro.Clasificacion Pareto",
+              "nativeQueryRef": "Clasificacion Pareto"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Eventos de paro"
+                  }
+                },
+                "Property": "Horas perdidas"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9.5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
